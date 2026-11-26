@@ -181,7 +181,6 @@ Os pontos que a hipótese previu se confirmaram: FCFS péssimo na carga sequenci
 **Evidências:** resultados/es.csv (experimento=X2); graficos/X2_cpu.png
 
 **Análise:**
-
 **HDD.** No polling, a CPU fica presa durante todo o atendimento, então `cpu_es_pct` é a própria utilização do disco: 86% na carga aleatória e 99,998% na sequencial. Na sequencial, o FCFS satura o disco (tempo total de 32,5 s) e a CPU passa praticamente todo o tempo em espera ocupada. A interrupção custa 2.000 × 8 × 0,017 = 272 ms de CPU, o que dá 272 / 24.257 = 1,12%, exatamente o valor medido.
 
 **Dispositivo rápido.** A relação se inverte. O polling gasta 2.000 × 0,064 = 128 ms (0,53%) e a interrupção continua gastando 272 ms (1,12%), ou seja, 2,125 vezes mais. Na carga sequencial o tempo total cai para 11,9 s, então as duas porcentagens dobram, mas a razão continua 2,125.
@@ -284,7 +283,6 @@ Também foram feitos 960 `open` (2 acessos e 4,27 ms cada) e 4.346 `read` (3,65 
 **Evidências:** resultados/arquivos.csv (experimento=X5); graficos/X5_tabelas.png
 
 **Análise:**
-
 **Tabelas.** Os quatro indicadores ficaram dentro do previsto. No pico, os 8 processos tinham 24 entradas nas tabelas por processo, mas a tabela global tinha só 12, uma por página distinta e metade da soma. As aberturas do mesmo arquivo compartilham o FCB carregado na memória, e o contador de aberturas chegou a 6: seis trabalhadores com a mesma página popular aberta ao mesmo tempo. Cada entrada por processo guarda a própria posição, então um trabalhador começa a ler do início mesmo enquanto outro está no meio do mesmo arquivo.
 
 **Linux e Windows.** É a mesma divisão do Linux: cada `open` cria uma `struct file` (posição e modo) que aponta para o mesmo `inode` em memória, com contador de referências. No Windows, os handles de cada processo apontam para objetos de arquivo do kernel. A entrada global só é removida quando o contador chega a zero, e é isso que permite o unlink adiado do N3.
@@ -327,7 +325,6 @@ Escritas, perdas na queda e tempos (LRU; sem cache: 1.045 escritas físicas, res
 **Evidências:** resultados/es.csv (experimento=X6); graficos/X6_acerto.png; graficos/X6_escrita.png
 
 **Análise:**
-
 **Acerto.** A curva é côncava, como previsto: +9 pontos de 64 para 128 blocos, +9 de 128 para 256, +6 de 256 para 512 e +3 de 512 para 1.024. Acima disso fica parada em 67,06%. A partir de 1.024 blocos, todos os blocos distintos da carga cabem na cache e as faltas restantes são compulsórias (o primeiro acesso a cada bloco), que nenhuma política evita.
 
 **LRU × FIFO.** A LRU ganha da FIFO por 8,3 pontos com 64 blocos, 6,3 com 128, 4,5 com 256, 3,6 com 512 e 0 com 1.024. A vantagem diminui com a capacidade: numa cache pequena a FIFO expulsa os blocos populares da distribuição de Zipf só porque entraram há mais tempo; numa cache grande quase nada é expulso.
@@ -391,7 +388,6 @@ Deslocamento total no intervalo de 8 ms (cilindros): FCFS 1.811.896; SSTF 1.150.
 **Evidências:** resultados/es.csv (experimento=X7); graficos/X7_espera_max_ms.png; graficos/X7_resposta_p95_ms.png
 
 **Análise:**
-
 **Saturação.** O FCFS satura primeiro. Com intervalo de 9 ms, sua resposta média já é 2,8 vezes a do SSTF; com 8 ms, chega a 281,6 ms, 10 vezes a do SSTF, com espera máxima de 616 ms. Os escalonadores que ordenam por posição continuam estáveis: o SSTF passa de 13,4 para 27,8 ms.
 
 **Inanição no SSTF.** A espera máxima do SSTF cresce 3,8 vezes (de 86,6 para 327,1 ms) e, a partir de 9 ms, é a maior entre os escalonadores que ordenam por posição. A média continua baixa porque quem fica esperando são as poucas requisições fora da região quente.
@@ -442,7 +438,6 @@ Buffering (produção de 2 ms, 500 blocos):
 **Evidências:** resultados/es.csv (experimento=X8); resultados/buffering.csv; graficos/X8_cpu.png; graficos/X8_buffering.png
 
 **Análise:**
-
 **CPU.** O custo do DMA ficou constante em 0,0448%: 1.000 × 0,018 ms / 40.206 ms. Com requisições de 1 bloco, o DMA é ligeiramente mais caro que a interrupção (0,0448% contra 0,0423%, ou 0,018 contra 0,017 ms por requisição). Já com 8 blocos é 7,5 vezes mais barato, e com 256 blocos é 241 vezes mais barato (0,0448% contra 10,82%). O cruzamento acontece entre 1 e 2 blocos, como previsto. O polling vai de 25% para 50% porque a duração de cada atendimento cresce com o tamanho, e ele gasta CPU durante todo esse tempo.
 
 **Buffering.** Os resultados batem com as fórmulas até a casa decimal. Com 1 buffer, o tempo total é 500 × (2 + consumo) = 1.250, 2.000 e 5.000 ms. Com 2 buffers, é 500 × max(2, consumo) + min(2, consumo) = 1.000,5, 1.002 e 4.002 ms. O buffer duplo deixa o recurso mais lento ocupado quase 100% do tempo: o dispositivo quando o consumo é de 2 ou 8 ms, e o produtor (sem bloqueio) quando o consumo é de 0,5 ms.
@@ -487,7 +482,6 @@ Acessos de cada `open`, calculados pelas regras do `resolver` (a soma, 64 / 13 =
 **Evidências:** resultados/arquivos.csv (experimento=X9); resultados/arquivos_por_operacao.csv
 
 **Análise:**
-
 **Erros.** Cada erro aconteceu onde foi previsto:
 - **`ENOENT`:** `open /atalhos/b_simbolico` depois do `unlink /dados/b.txt`. O link simbólico guarda só o nome do alvo, que deixou de existir (ponteiro pendente).
 - **`ELOOP`:** `open /atalhos/l1`, que resolve `l1 → l2 → l1 …` e é interrompido no 9º link, depois de 18 leituras de diretório.
@@ -540,7 +534,6 @@ Decomposição das 961 verificações, calculada pelas regras do M5 (o total bat
 **Evidências:** resultados/arquivos.csv (experimento=X10); resultados/arquivos_por_operacao.csv
 
 **Análise:**
-
 **Custo da ACL.** Em `notas.txt`, com 11 entradas na ACL, cada abertura custa de 11 a 12 comparações. Em `conta.txt`, só com os bits rwx, custa 1. Até a dona paga 12, porque a ACL é percorrida antes dos bits. É o compromisso de 11.6.2: a ACL é mais expressiva, mas fica mais cara à medida que cresce. No NTFS, que só tem ACL, os descritores longos também são percorridos entrada por entrada.
 
 **Negações.** Os 41 `EACCES` são 20 de carol (fora da ACL e sem bits de "outros", com `notas.txt` em 600), 20 de bob tentando escrever (a primeira entrada dele, `r--`, decide e nega) e 1 abertura de bob antes de a ACL existir. O `EPERM` é o `chmod` feito por bob, que não é o dono.
@@ -580,7 +573,6 @@ Decomposição das 961 verificações, calculada pelas regras do M5 (o total bat
 **Evidências:** resultados/arquivos.csv (experimento=X11); resultados/arquivos_por_operacao.csv; graficos/X11_alocacao.png; graficos/X11_fragmentacao.png
 
 **Análise:**
-
 **Contígua.** A fragmentação externa apareceu como previsto. Sobraram 2.052 blocos livres, mas em 50 pedaços, e o maior tem só 154 blocos. Resultado: 113 extensões falharam com `ENOSPC` mesmo com espaço livre total suficiente, e 59 realocações copiaram o arquivo inteiro. Por isso o `write` da contígua custa 15 acessos e 78 ms, e ela tem o *pior* tempo médio por operação (34,6 ms). Encadeada, FAT e indexada nunca falharam e deixaram o espaço livre num único trecho. Em troca, os arquivos ficaram com cerca de 64% dos blocos fora de sequência.
 
 **Encadeada.** Em acessos, a encadeada foi de longe a pior: 74,9 por `read` e 142,9 por `write`, contra cerca de 3 da FAT. O cursor só ajuda para a frente; num acesso direto para trás ou numa extensão no fim, ela relê a corrente desde o primeiro bloco. Em tempo, porém, ela gasta só 6,4 ms por `read`. Os blocos da corrente foram alocados em sequência (primeiros livres), então quase todas as leituras de ponteiro são "bloco seguinte" e custam 0,04 ms. Num disco envelhecido, cada ponteiro pagaria busca e rotação e ela seria inviável.
@@ -625,7 +617,6 @@ Escritas físicas: compilador 1.109 (contígua) e 2.014 (indexada) sem cache, co
 **Evidências:** resultados/es.csv (experimento=X12); graficos/X12_resposta.png
 
 **Análise:**
-
 **A fila não é curta.** A hipótese errou ao supor fila curta. O instante de cada requisição é o da operação na carga (o simulador copia o tempo da carga para `camada.instante_ms`), e não o instante em que o acesso anterior terminou. O compilador emite 5.400 acessos em cerca de 1,95 s, mas o HDD precisa de 12 s para atendê-los. Por isso, sem cache, a resposta média fica entre 4 e 22 s: quase tudo é fila.
 
 **Escalonadores.** Mesmo com fila longa, o efeito dos escalonadores depende da carga.
@@ -663,7 +654,6 @@ Teste extra `test_regravacao_gera_coleta_e_amplificacao` (dispositivo de 256 pá
 **Evidências:** resultados/es.csv (experimento=X13)
 
 **Análise:**
-
 **Resposta.** O flash respondeu 78 vezes mais rápido na carga aleatória (0,644 contra 50,1 ms) e cerca de 40.000 vezes mais rápido na de reúso. Na de reúso, o HDD com FCFS está saturado (3,5 s de fila), e o flash nem chega a formar fila.
 
 **Leitura × escrita.** A assimetria entre leitura e escrita aparece nos números. Na carga de reúso, com 1 página e 65% de leituras, a média esperada é 0,65 × 0,025 + 0,35 × 0,2 = 0,086 ms, e o medido foi 0,087. Na aleatória, com 8 páginas, uma leitura custa 0,2 ms e uma escrita 1,6 ms, e o p95 de 1,6 ms é justamente o das escritas.
@@ -728,7 +718,13 @@ Teste extra `test_regravacao_gera_coleta_e_amplificacao` (dispositivo de 256 pá
 
 ## 8. Declaração de autoria e uso de IA
 
-**Quem fez o quê:** [preencher: divisão do trabalho entre os integrantes]
+**Quem fez o quê:** os três integrantes participaram de todo o trabalho. O código foi gerado com o Claude, sob supervisão dos integrantes, que definiram as decisões de implementação, revisaram o código, rodaram os testes e conferiram os resultados. Cada integrante ficou responsável por uma parte:
+
+- **Thiago Farias dos Santos** — subsistema de E/S: N2 (SSTF, SCAN, polling e interrupção), M2 (C-SCAN, LOOK, C-LOOK e DEADLINE), M3 (DMA e buffering), integração ponta a ponta e o repositório; experimentos X1, X2, X7, X8 e X12.
+- **Pedro Marques Sangali** — sistema de arquivos: N3 (resolução de caminhos, operações e tabelas de arquivos abertos), M4 (links e compartilhamento) e M5 (proteção e travas); experimentos X3, X4, X5, X9 e X10.
+- **Gabriel Kondach** — cache, alocação e flash: M1 (cache de blocos), M6 (alocação em disco) e o bônus de armazenamento flash; experimentos X6, X11 e X13, além da validação da entrega.
+
+O relatório (seções 0 a 7) foi revisado e fechado pelos três em conjunto.
 
 **Uso de ferramentas de IA:**
 
